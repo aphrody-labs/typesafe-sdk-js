@@ -31,7 +31,7 @@ if (existing.status === 0) {
   if (error?.error?.code !== "E404") throw new Error(`Registry lookup failed: ${existing.stderr}`);
   const result = spawnSync(
     "bun",
-    ["publish", tarball, "--access", "public", "--tag", "latest", "--provenance"],
+    ["publish", tarball, "--access", "public", "--tag", "latest", "--ignore-scripts"],
     {
       stdio: "inherit",
     },
