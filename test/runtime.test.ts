@@ -1,39 +1,45 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { describeRuntime, isBrowser } from "../src/runtime";
+import { nativeRuntimeHeader } from "./helpers";
+
+const nodeProcess = { versions: { node: "22.15.0" }, platform: "linux", arch: "x64" };
 
 describe("describeRuntime", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  it("reports the native runtime with its exact version, platform and arch", () => {
+    expect(describeRuntime()).toBe(nativeRuntimeHeader());
+  });
 
-  it("reports node with platform and arch here", () => {
-    expect(describeRuntime()).toMatch(/^node\/\d+\.\d+\.\d+ \(\w+; \w+\)$/);
+  it("reports node with platform and arch in an isolated environment", () => {
+    expect(describeRuntime({ process: nodeProcess })).toBe("node/22.15.0 (linux; x64)");
   });
 
   it("prefers Bun over node when both are present", () => {
-    vi.stubGlobal("Bun", { version: "1.2.3" });
-    expect(describeRuntime()).toMatch(/^bun\/1\.2\.3 \(\w+; \w+\)$/);
+    expect(describeRuntime({ process: nodeProcess, Bun: { version: "1.2.3" } })).toBe(
+      "bun/1.2.3 (linux; x64)",
+    );
   });
 
   it("recognizes Deno", () => {
-    vi.stubGlobal("Deno", { version: { deno: "2.1.0" } });
-    expect(describeRuntime()).toMatch(/^deno\/2\.1\.0/);
+    expect(describeRuntime({ process: nodeProcess, Deno: { version: { deno: "2.1.0" } } })).toBe(
+      "deno/2.1.0 (linux; x64)",
+    );
   });
 
   it("recognizes edge runtimes by their markers", () => {
-    vi.stubGlobal("EdgeRuntime", "edge-runtime");
-    expect(describeRuntime()).toBe("vercel-edge");
-    vi.unstubAllGlobals();
-    vi.stubGlobal("navigator", { userAgent: "Cloudflare-Workers" });
-    expect(describeRuntime()).toBe("cloudflare-workers");
+    expect(describeRuntime({ process: nodeProcess, EdgeRuntime: "edge-runtime" })).toBe(
+      "vercel-edge",
+    );
+    expect(
+      describeRuntime({ process: nodeProcess, navigator: { userAgent: "Cloudflare-Workers" } }),
+    ).toBe("cloudflare-workers");
   });
 
   it("falls back to browser, then unknown", () => {
-    vi.stubGlobal("process", undefined);
-    vi.stubGlobal("window", { document: {} });
-    vi.stubGlobal("navigator", { userAgent: "Mozilla/5.0" });
-    expect(isBrowser()).toBe(true);
-    expect(describeRuntime()).toBe("browser");
-    vi.stubGlobal("window", undefined);
-    expect(isBrowser()).toBe(false);
-    expect(describeRuntime()).toBe("unknown");
+    const browser = { window: { document: {} }, navigator: { userAgent: "Mozilla/5.0" } };
+    expect(isBrowser(browser)).toBe(true);
+    expect(describeRuntime(browser)).toBe("browser");
+    const unknown = { navigator: browser.navigator };
+    expect(isBrowser(unknown)).toBe(false);
+    expect(describeRuntime(unknown)).toBe("unknown");
   });
 });

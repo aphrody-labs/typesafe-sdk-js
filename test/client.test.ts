@@ -16,7 +16,7 @@ import { DEFAULT_BASE_URL, DEFAULT_MODEL } from "../src/client";
 import { DEFAULT_LOG_LEVEL, LOG_LEVELS } from "../src/logging";
 import { DEFAULT_RETRY_POLICY, DEFAULT_TIMEOUT_MS } from "../src/retry";
 import { describeRuntime } from "../src/runtime";
-import { json, mockFetch } from "./helpers";
+import { json, mockFetch, nativeRuntimeHeader } from "./helpers";
 
 /** Read the API key from an outgoing request. */
 const sentApiKey = async (config: TypeSafeClientConfig = {}): Promise<string | undefined> => {
@@ -142,7 +142,7 @@ describe("requests", () => {
     expect(headers["User-Agent"]).toBe(`typesafe-sdk/${VERSION}`);
     expect(headers["X-TypeSafe-SDK"]).toBe(`typesafe-sdk/${VERSION}`);
     expect(headers["X-TypeSafe-Runtime"]).toBe(describeRuntime());
-    expect(headers["X-TypeSafe-Runtime"]).toMatch(/^node\/\d+\.\d+\.\d+ \(\w+; \w+\)$/);
+    expect(headers["X-TypeSafe-Runtime"]).toBe(nativeRuntimeHeader());
     expect(headers["Content-Type"]).toBeUndefined();
   });
 

@@ -10,9 +10,13 @@ if (files.length !== 1) throw new Error("Expected exactly one release tarball");
 const tarball = `./release/${files[0]}`;
 const { name, version } = JSON.parse(readFileSync("package.json", "utf8"));
 const integrity = `sha512-${createHash("sha512").update(readFileSync(tarball)).digest("base64")}`;
-const existing = spawnSync("bun", ["pm", "view", `${name}@${version}`, "dist.integrity", "--json"], {
-  encoding: "utf8",
-});
+const existing = spawnSync(
+  "bun",
+  ["pm", "view", `${name}@${version}`, "dist.integrity", "--json"],
+  {
+    encoding: "utf8",
+  },
+);
 if (existing.status === 0) {
   if (JSON.parse(existing.stdout) !== integrity)
     throw new Error("This version is already on the npm registry with different contents");

@@ -20,12 +20,12 @@ try {
     ["publint", []],
     ["attw", ["--pack", tarball]],
   ]) {
-  const result = spawnSync(cmd, args, {
-    stdio: "inherit",
-    env,
-    shell: process.platform === "win32",
-  });
-  if (result.status !== 0) process.exit(result.status ?? 1);
+    const result = spawnSync(cmd, args, {
+      stdio: "inherit",
+      env,
+      shell: process.platform === "win32",
+    });
+    if (result.status !== 0) process.exit(result.status ?? 1);
   }
 } finally {
   rmSync(packed, { recursive: true, force: true });

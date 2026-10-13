@@ -25,3 +25,9 @@ export const json = (data: unknown, init: ResponseInit = {}): Response =>
     ...init,
     headers: { "content-type": "application/json", ...init.headers },
   });
+
+/** Expected native header, independent of SDK runtime detection. */
+export const nativeRuntimeHeader = (): string => {
+  const runtime = process.versions.bun ? "bun" : "node";
+  return `${runtime}/${process.versions[runtime]} (${process.platform}; ${process.arch})`;
+};

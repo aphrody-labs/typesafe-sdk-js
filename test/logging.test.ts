@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { type Logger, TypeSafeClient, VERSION } from "../src";
 import { consoleLogger, redactHeaders } from "../src/logging";
-import { json, mockFetch } from "./helpers";
+import { json, mockFetch, nativeRuntimeHeader } from "./helpers";
 
 /** Create a logger that records calls for assertions. */
 const recordingLogger = (): Logger & {
@@ -105,7 +105,7 @@ describe("custom logger and level filtering", () => {
         Accept: "application/json",
         "User-Agent": `typesafe-sdk/${VERSION}`,
         "X-TypeSafe-SDK": `typesafe-sdk/${VERSION}`,
-        "X-TypeSafe-Runtime": expect.stringMatching(/^node\//),
+        "X-TypeSafe-Runtime": nativeRuntimeHeader(),
       },
       body: undefined,
     });
