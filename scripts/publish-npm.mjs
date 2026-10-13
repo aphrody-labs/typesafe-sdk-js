@@ -1,40 +1,45 @@
 // Publish the already-tested tarball. A retry can skip only an identical registry artifact.
-
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 
+const registry = "https://registry.npmjs.org/";
 const files = readdirSync("release").filter((file) => file.endsWith(".tgz"));
 if (files.length !== 1) throw new Error("Expected exactly one release tarball");
-// The ./ prefix identifies the local tarball for Bun publish.
 const tarball = `./release/${files[0]}`;
 const { name, version } = JSON.parse(readFileSync("package.json", "utf8"));
 const integrity = `sha512-${createHash("sha512").update(readFileSync(tarball)).digest("base64")}`;
-const existing = spawnSync(
-  "bun",
-  ["pm", "view", `${name}@${version}`, "dist.integrity", "--json"],
+const existing = await fetch(
+  `${registry}${encodeURIComponent(name)}/${encodeURIComponent(version)}`,
   {
-    encoding: "utf8",
+    headers: { "cache-control": "no-cache" },
+    signal: AbortSignal.timeout(30_000),
   },
 );
-if (existing.status === 0) {
-  if (JSON.parse(existing.stdout) !== integrity)
+if (existing.status === 200) {
+  const metadata = await existing.json();
+  if (
+    metadata.name !== name ||
+    metadata.version !== version ||
+    metadata.dist?.integrity !== integrity
+  )
     throw new Error("This version is already on the npm registry with different contents");
   console.log(`${name}@${version} is already published with identical contents.`);
 } else {
-  let error;
-  try {
-    error = JSON.parse(existing.stdout);
-  } catch {
-    /* Bun can fail before producing JSON */
-  }
-  if (error?.error?.code !== "E404") throw new Error(`Registry lookup failed: ${existing.stderr}`);
+  if (existing.status !== 404) throw new Error(`Registry lookup failed: HTTP ${existing.status}`);
   const result = spawnSync(
     "bun",
-    ["publish", tarball, "--access", "public", "--tag", "latest", "--ignore-scripts"],
-    {
-      stdio: "inherit",
-    },
+    [
+      "publish",
+      tarball,
+      "--access",
+      "public",
+      "--tag",
+      "latest",
+      "--ignore-scripts",
+      `--registry=${registry}`,
+    ],
+    { stdio: "inherit", timeout: 90_000 },
   );
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
