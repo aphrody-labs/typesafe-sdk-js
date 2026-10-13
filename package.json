@@ -1,6 +1,6 @@
 {
-  "name": "@typesafe-ai/sdk",
-  "version": "0.6.0",
+  "name": "@aphrody/typesafe-sdk",
+  "version": "0.6.1",
   "description": "TypeScript SDK for the TypeSafe API",
   "license": "MIT",
   "author": "evinism",
@@ -27,10 +27,6 @@
     "README.md"
   ],
   "sideEffects": false,
-  "engines": {
-    "node": ">=20"
-  },
-  "packageManager": "npm@11.19.0",
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc",
@@ -41,16 +37,16 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:coverage": "vitest run --coverage",
     "test:dist": "vitest run --config vitest.dist.config.ts",
-    "check:version": "node scripts/check-version.mjs",
-    "check:package": "node scripts/check-package.mjs",
-    "prepublishOnly": "npm run check",
-    "push:npm": "npm publish",
-    "push:npm:dry": "npm publish --dry-run",
-    "push:jsr": "npm run check && jsr publish",
-    "push:jsr:dry": "npm run check && jsr publish --dry-run --allow-dirty",
-    "demo": "tsx examples/demo.ts",
-    "check": "npm run lint && npm run typecheck && npm run check:version && npm run test:coverage && npm run build && npm run test:dist && npm run check:package",
-    "docs": "npm ci --prefix docs --ignore-scripts --no-audit --no-fund && npm run --prefix docs build"
+    "check:version": "bun scripts/check-version.mjs",
+    "check:package": "bun scripts/check-package.mjs",
+    "prepublishOnly": "bun run check",
+    "push:npm": "bun publish",
+    "push:npm:dry": "bun publish --dry-run",
+    "push:jsr": "bun run check && jsr publish",
+    "push:jsr:dry": "bun run check && jsr publish --dry-run --allow-dirty",
+    "demo": "bun examples/demo.ts",
+    "check": "bun run lint && bun run typecheck && bun run check:version && bun run test:coverage && bun run build && bun run test:dist && bun run check:package",
+    "docs": "bun install --cwd docs --frozen-lockfile && bun run --cwd docs build"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -70,10 +66,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/typesafe-ai/typesafe-sdk-js.git"
+    "url": "git+https://github.com/aphrody-labs/typesafe-sdk-js.git"
   },
-  "homepage": "https://docs.typesafe.ai/sdk/javascript",
+  "homepage": "https://github.com/aphrody-labs/typesafe-sdk-js",
   "bugs": {
-    "url": "https://github.com/typesafe-ai/typesafe-sdk-js/issues"
+    "url": "https://github.com/aphrody-labs/typesafe-sdk-js/issues"
   }
 }
